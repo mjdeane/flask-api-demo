@@ -4,6 +4,11 @@ class Model:
         self.name = name
         self.function = function
 
+
+    # TODO: methods within this class should handle all the business logic from the app to the databases
+    # TODO: these methods should include get_by_id , get_by_params, update, save, delete
+
+
     @classmethod
     def from_dict(_class, thing_dict):
         name = thing_dict['name']

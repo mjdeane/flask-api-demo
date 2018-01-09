@@ -22,6 +22,7 @@ class Model:
        cls.data_access.add(thing)
        return cls.from_dict(thing) 
 
+
     @classmethod
     def get_by_name(cls, name):
         thing = cls.data_access.find({'name':name})

@@ -30,7 +30,6 @@ class Thing(Resource):
             abort(404, message='Thing {} not found'.format(name))
         return vars(thing), 201
 
-
 class ThingList(Resource):
     def get(self):
         thing_list = list(Model.find_all())
@@ -45,8 +44,8 @@ class ThingList(Resource):
         
         return vars(thing), 201
 
-
 api.add_resource(ThingList, '/things')
 api.add_resource(Thing, '/things/<name>')
 
 app.run(debug=True,host='0.0.0.0', port=80)
+

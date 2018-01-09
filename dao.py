@@ -1,13 +1,7 @@
 from pymongo import MongoClient
 
 class Dao:
-#    _mongo = PyMongo(app)
-
     def __init__(self):
-#        app.config['MONGO_DBNAME'] = 'thing_list'
-#        app.config['MONGO_URI'] = 'mongodb://admin:admin@cluster0-shard-00-00-bwkql.mongodb.net:27017,cluster0-shard-00-01-bwkql.mongodb.net:27017,cluster0-shard-00-02-bwkql.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin'
-#        app.config['MONGO_URI'] = 'mongodb+srv://admin:iadmin@cluster0-bwkql.mongodb.net/test'
-#        client = MongoClient('mongodb://admin:admin@cluster0-shard-00-00-bwkql.mongodb.net:27017,cluster0-shard-00-01-bwkql.mongodb.net:27017,cluster0-shard-00-02-bwkql.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin')
         client = MongoClient()
         self.db = client['thing_list']
 

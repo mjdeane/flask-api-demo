@@ -34,8 +34,8 @@ class ThingList(Resource):
     def get(self):
         thing_list = list(Model.find_all())
         thing_dict = {}
-        for i in range(0,len(thing_list)):
-            thing_dict[str(i)] = {'name':thing_list[i]['name'],'function':thing_list[i]['function']}
+        for t in thing_list:
+            thing_dict[str(t['_id'])] = {'name':t['name'],'function':t['function']}
         return thing_dict
 
     def post(self):
@@ -47,5 +47,5 @@ class ThingList(Resource):
 api.add_resource(ThingList, '/things')
 api.add_resource(Thing, '/things/<name>')
 
-app.run(debug=True,host='0.0.0.0', port=80)
+app.run(debug=True,host='0.0.0.0', port=5000)
 

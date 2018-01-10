@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Resource, Api
 from model import Model
@@ -11,22 +12,27 @@ parser.add_argument('function')
 
 class Thing(Resource):
     def get(self, _id):
-        thing = Model.get_by_id(_id)
+        try:
+            thing = Model.get_by_id(_id)
+        except:
+            abort(500, message='Unexpected Error')
         if not thing:
             abort(404, message='Thing {} not found'.format(_id))
         return jsonify(vars(thing))
 
     def delete(self, _id):
-        response = Model.delete(_id)
-        if not response:
-            abort(404, message='Thing {} not found'.format(_id))
+        try:
+            response = Model.delete(_id)
+        except:
+            abort(500, message='Unexpected Error')
         return jsonify(response)
 
     def put(self, _id):
         args = parser.parse_args()
-        response = Model.update(_id, args['name'], args['function'])
-        if not response:
-            abort(404, message='Thing {} not found'.format(_id))
+        try:
+            response = Model.update(_id, args['name'], args['function'])
+        except:
+            abort(500, message='Unexpected Error')
         return jsonify(response)
 
 class ThingList(Resource):
@@ -37,15 +43,20 @@ class ThingList(Resource):
             params['name'] = args['name']
         if args['function']:
             params['funtion'] = args['function']
-        thing_list = Model.get_by_params(params)
-
+        try:
+            thing_list = Model.get_by_params(params)
+        except:
+            abort(500, message='Unexpected Error')
         thing_dict = dict(map(lambda t: (t._id, {'name':t.name, 'function': t.function}),
                               thing_list))
         return jsonify(thing_dict)
 
     def post(self):
         args = parser.parse_args()
-        thing = Model.save({'name':args['name'],'function':args['function']})
+        try:
+            thing = Model.save({'name':args['name'],'function':args['function']})
+        except:
+            abort(500, message='Unexpected Error')
         return jsonify(vars(thing))
 
 api.add_resource(ThingList, '/things')

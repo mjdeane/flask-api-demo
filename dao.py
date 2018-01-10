@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+from bson.objectid import ObjectId
+from bson import json_util
 
 class Dao:
     def __init__(self):
@@ -8,17 +10,18 @@ class Dao:
     def add(self, item):
         self.db['things'].insert_one(item)
 
-    def find(self, selector):
-        item = self.db['things'].find_one(selector)
-        if not item:
-            return None
-        else:
-            return item
+    def find(self, _id):
+        item = self.db['things'].find_one({'_id':ObjectId(_id)})
+        return item or None
 
-    def delete(self, name):
-        item = self.db['things'].find_one_and_delete({'name':name})
-        return item
+    def delete(self, _id):
+        response = self.db['things'].delete_one({'_id': ObjectId(_id)})
+        return json_util.dumps(response.raw_result)
 
-    def find_all(self):
-        item_list = self.db['things'].find()
+    def find_by_params(self,params):
+        item_list = self.db['things'].find(params)
         return item_list
+
+    def update(self, _id, updates):
+        response = self.db['things'].update_one({'_id':ObjectId(_id)}, {'$set':updates})
+        return json_util.dumps(response.raw_result)

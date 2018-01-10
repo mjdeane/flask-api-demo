@@ -8,43 +8,36 @@ class Model:
         self.function = function
         self._id = _id
     @classmethod
-    def update(cls, name, function):
-        thing = cls.data_access.delete(name)
-        if not thing:
-            return None
-        updated_thing = {'name':name, 'function':function}
-        cls.data_access.add(updated_thing)
-        return cls.from_dict(updated_thing)
-        
+    def update(cls, _id, name, function):
+        updates = {}
+        if name:
+            updates['name'] = name
+        if function:
+            updates['function'] = function
+        response = cls.data_access.update(_id, updates)
+        print(response)
+        return response
+
     @classmethod
-    def save(cls, name, function):
-       thing = {'name':name, 'function':function}
-       cls.data_access.add(thing)
-       return cls.from_dict(thing)
+    def save(cls, payload):
+       cls.data_access.add(payload)
+       return cls.from_dict(payload)
 
     @classmethod
     def get_by_id(cls, _id):
-        thing = cls.data_access.find({'_id':_id})
+        thing = cls.data_access.find(_id)
         return cls.from_dict(thing)
 
     @classmethod
-    def get_by_name(cls, name):
-        thing = cls.data_access.find({'name':name})
-        return cls.from_dict(thing)
+    def get_by_params(cls, params):
+        thing_list = cls.data_access.find_by_params(params)
+        thing_list = list(map(cls.from_dict, thing_list))
+        return thing_list
 
     @classmethod
-    def get_by_function(cls, function):
-        thing = cls.data_access.find({'function':function})
-        return cls.from_dict(thing)
-
-    @classmethod
-    def delete(cls, name):
-        thing = cls.data_access.delete(name)
-        return cls.from_dict(thing)
-
-    @classmethod
-    def find_all(cls):
-        return cls.data_access.find_all()
+    def delete(cls, _id):
+        response = cls.data_access.delete(_id)
+        return response
 
     @classmethod
     def from_dict(cls, thing_dict):
@@ -52,5 +45,3 @@ class Model:
         function = thing_dict['function']
         _id = str(thing_dict['_id'])
         return cls(name, function, _id)
-
-

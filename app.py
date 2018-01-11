@@ -82,7 +82,7 @@ class ThingList(Resource):
             thing = Model.save(params)
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        return jsonify(vars(thing))
+        return jsonify(thing)
 
 api.add_resource(ThingList, '/things')
 api.add_resource(Thing, '/things/<_id>')

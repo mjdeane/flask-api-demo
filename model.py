@@ -9,13 +9,13 @@ class Model:
         self._id = str(params['_id'])
 
     @classmethod
-    def update(cls, _id, name, function):
-        updates = {}
-        if name:
-            updates['name'] = name
-        if function:
-            updates['function'] = function
-        response = cls.data_access.update(_id, updates)
+    def update(cls, _id, params):
+        if params['name'] == None:
+            del params['name']
+        if params['function'] == None:
+            del params['function']
+        print(params)
+        response = cls.data_access.update(_id, params)
         print(response)
         return response
 

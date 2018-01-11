@@ -46,7 +46,7 @@ class Thing(Resource):
             abort(400,message='invalid id')
         args = parser.parse_args()
         try:
-            response = Model.update(_id, args['name'], args['function'])
+            response = Model.update(_id, {'name':args['name'], 'function':args['function']})
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         return jsonify(response)

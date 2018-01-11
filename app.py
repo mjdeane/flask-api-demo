@@ -79,7 +79,7 @@ class ThingList(Resource):
         except:
             abort(400,message='invalid parameter')
         try:
-            thing = Model.save()
+            thing = Model.save(params)
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         return jsonify(vars(thing))

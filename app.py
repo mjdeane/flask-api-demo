@@ -37,7 +37,9 @@ class Thing(Resource):
             response = Model.delete(_id)
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        return jsonify(response)
+        response = jsonify(response)
+        response.status_code = 204
+        return response
 
     def put(self, _id):
         try:
@@ -49,7 +51,9 @@ class Thing(Resource):
             response = Model.update(_id, {'name':args['name'], 'function':args['function']})
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        return jsonify(response)
+        response = jsonify(response)
+        response.status_code = 201
+        return response
 
 class ThingList(Resource):
     def get(self):
@@ -82,7 +86,9 @@ class ThingList(Resource):
             thing = Model.save(params)
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        return jsonify(thing)
+        response = jsonify(thing)
+        response.status_code = 201
+        return response
 
 api.add_resource(ThingList, '/things')
 api.add_resource(Thing, '/things/<_id>')

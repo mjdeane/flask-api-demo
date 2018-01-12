@@ -63,8 +63,7 @@ class ThingList(Resource):
             abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        thing_dict = dict(map(lambda t: (t._id, {'name':t.name, 'function': t.function}),
-                              thing_list))
+        thing_dict = list(map(vars, thing_list))
         return jsonify(thing_dict)
 
     def post(self):

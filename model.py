@@ -4,20 +4,21 @@ class Model:
     data_access = Dao()
 
     def __init__(self, params):
-        self.name = params['name']
-        self.function = params['function']
-        self._id = str(params['_id'])
+        self.name = params['name'] if 'name' in params else None
+        self.function = params['function'] if 'function' in params else None
+        self._id = str(params['_id']) if '_id' in params else None
 
     @classmethod
     def update(cls, _id, params):
         response = cls.data_access.update(_id, params)
-        print(response)
-        return response
+        thing = cls.data_access.find(_id)
+        return cls(thing)
 
     @classmethod
     def save(cls, payload):
-       _id = cls.data_access.add(payload)
-       return {'_id' : _id}
+        _id = cls.data_access.add(payload)
+        payload['_id'] = _id
+        return cls(payload)
 
     @classmethod
     def get_by_id(cls, _id):

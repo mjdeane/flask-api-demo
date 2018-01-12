@@ -43,12 +43,12 @@ class Thing(Resource):
         try:
             id_schema(_id)
             params_schema(params)
-            response = Model.update(_id, params)
+            thing = Model.update(_id, params)
         except Invalid as e:
             abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        response = jsonify(response)
+        response = jsonify(vars(thing))
         response.status_code = 201
         return response
 
@@ -75,7 +75,7 @@ class ThingList(Resource):
             abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
-        response = jsonify(thing)
+        response = jsonify(vars(thing))
         response.status_code = 201
         return response
 

@@ -10,10 +10,10 @@ class Model:
 
     @classmethod
     def update(cls, _id, params):
-        if params['name'] == None:
-            del params['name']
-        if params['function'] == None:
-            del params['function']
+#        if params['name'] == None:
+#            del params['name']
+#        if params['function'] == None:
+#            del params['function']
         print(params)
         response = cls.data_access.update(_id, params)
         print(response)

@@ -2,7 +2,7 @@ import sys
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Resource, Api
 from model import Model
-from voluptuous import Schema, All, Length, Match
+from voluptuous import Schema, All, Length, Match, Required, Invalid
 
 app = Flask(__name__)
 api = Api(app)
@@ -12,16 +12,16 @@ parser.add_argument('name')
 parser.add_argument('function')
 
 params_schema = Schema({'name':str,'function':str})
+req_params_schema = Schema({Required('name'):str,Required('function'):str})
 id_schema = Schema(All(str,Length(min=24,max=24,),Match(r'^[0123456789abcdef]*$')))
 
 class Thing(Resource):
     def get(self, _id):
         try:
             id_schema(_id)
-        except:
-            abort(400,message='invalid id')
-        try:
             thing = Model.get_by_id(_id)
+        except Invalid as e:
+            abort(400,message='invalid id') 
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         if not thing:
@@ -31,10 +31,9 @@ class Thing(Resource):
     def delete(self, _id):
         try:
             id_schema(_id)
-        except:
-            abort(400,message='invalid id')
-        try:
             response = Model.delete(_id)
+        except Invalid as e:
+            abort(400,message='invalid id')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         response = jsonify(response)
@@ -42,13 +41,15 @@ class Thing(Resource):
         return response
 
     def put(self, _id):
+        args = parser.parse_args()
+        params = {k:v for k,v in args.items() if v is not None}
         try:
             id_schema(_id)
-        except:
-            abort(400,message='invalid id')
-        args = parser.parse_args()
-        try:
-            response = Model.update(_id, {'name':args['name'], 'function':args['function']})
+            params_schema(params)
+            response = Model.update(_id, params)
+        except Invalid as e:
+            print(args)
+            abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         response = jsonify(response)
@@ -58,17 +59,12 @@ class Thing(Resource):
 class ThingList(Resource):
     def get(self):
         args = parser.parse_args()
-        params = {}
-        if args['name']:
-            params['name'] = args['name']
-        if args['function']:
-            params['funtion'] = args['function']
+        params = {k:v for k,v in args.items() if v is not None}
         try:
             params_schema(params)
-        except:
-            abort(400,message='invalid parameter')
-        try:
             thing_list = Model.get_by_params(params)
+        except Invalid as e:
+            abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         thing_dict = dict(map(lambda t: (t._id, {'name':t.name, 'function': t.function}),
@@ -77,13 +73,11 @@ class ThingList(Resource):
 
     def post(self):
         args = parser.parse_args()
-        params = {'name':args['name'],'function':args['function']}
         try:
-            params_schema(params)
-        except:
+            req_params_schema(args)
+            thing = Model.save(args)
+        except Invalid as e:
             abort(400,message='invalid parameter')
-        try:
-            thing = Model.save(params)
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         response = jsonify(thing)

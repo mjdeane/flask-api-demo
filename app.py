@@ -2,7 +2,7 @@ import sys
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Resource, Api
 from model import Model
-from voluptuous import Schema, All, Length, Match, Required, Invalid
+from validate import params_schema, req_params_schema, id_schema
 
 app = Flask(__name__)
 api = Api(app)
@@ -11,9 +11,6 @@ parser = reqparse.RequestParser()
 parser.add_argument('name')
 parser.add_argument('function')
 
-params_schema = Schema({'name':str,'function':str})
-req_params_schema = Schema({Required('name'):str,Required('function'):str})
-id_schema = Schema(All(str,Length(min=24,max=24,),Match(r'^[0123456789abcdef]*$')))
 
 class Thing(Resource):
     def get(self, _id):
@@ -48,7 +45,6 @@ class Thing(Resource):
             params_schema(params)
             response = Model.update(_id, params)
         except Invalid as e:
-            print(args)
             abort(400,message='invalid parameter')
         except:
             abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))

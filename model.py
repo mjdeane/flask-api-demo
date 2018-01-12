@@ -10,7 +10,6 @@ class Model:
 
     @classmethod
     def update(cls, _id, params):
-        print(params)
         response = cls.data_access.update(_id, params)
         print(response)
         return response

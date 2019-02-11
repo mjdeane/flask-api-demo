@@ -1,12 +1,11 @@
-from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+import sys
+from flask import Flask, jsonify
+from flask_restful import reqparse, abort, Resource, Api
 from model import Model
-from dao import Dao
+from validate import params_schema, req_params_schema, id_schema
 
 app = Flask(__name__)
 api = Api(app)
-dao = Dao(app)
-
 
 parser = reqparse.RequestParser()
 parser.add_argument('name')
@@ -14,58 +13,73 @@ parser.add_argument('function')
 
 
 class Thing(Resource):
-    def get(self, name):
-        # TODO: do not interact with the DAO from the APP, the APP will communicate with the MODEL to handle all business logic
-        thing = dao.find(name)
-        
+    def get(self, _id):
+        try:
+            id_schema(_id)
+            thing = Model.get_by_id(_id)
+        except Invalid as e:
+            abort(400,message='invalid id') 
+        except:
+            abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
         if not thing:
-            abort(404, message='Thing {} not found'.format(name))
-            
-        return thing.serialize()
+            abort(404, message='Thing {} not found'.format(_id))
+        return jsonify(vars(thing))
 
-    def delete(self, name):
-        # TODO: do not interact with the DAO from the APP, the APP will communicate with the MODEL to handle all business logic
-        dao.delete(name)
-        
-        return name, 204
+    def delete(self, _id):
+        try:
+            id_schema(_id)
+            response = Model.delete(_id)
+        except Invalid as e:
+            abort(400,message='invalid id')
+        except:
+            abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
+        response = jsonify(response)
+        response.status_code = 204
+        return response
 
-    def put(self, name):
+    def put(self, _id):
         args = parser.parse_args()
-        thing = dao.delete(name)
-        if not thing:
-            abort(404, message='Thing {} not found'.format(name))
-        
-        # TODO: do not interact with the DAO from the APP, the APP will communicate with the MODEL to handle all business logic
-        dao.add(Model.from_dict({'name':name, 'function':args['function']}))
-
-        return name, 201
-
+        params = {k:v for k,v in args.items() if v is not None}
+        try:
+            id_schema(_id)
+            params_schema(params)
+            thing = Model.update(_id, params)
+        except Invalid as e:
+            abort(400,message='invalid parameter')
+        except:
+            abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
+        response = jsonify(vars(thing))
+        response.status_code = 201
+        return response
 
 class ThingList(Resource):
     def get(self):
-        thing_list = list(dao.find_all())
-        thing_dict = {}
-        for i in range(0,len(thing_list)):
-
-            # TODO: debugging, if i is not within thing_list you will get an error below with [i]['name'] ?
-            print(thing_list[i])
-
-            thing_dict[str(i)] = {'name':thing_list[i]['name'],'function':thing_list[i]['function']}
-        return thing_dict
+        args = parser.parse_args()
+        params = {k:v for k,v in args.items() if v is not None}
+        try:
+            params_schema(params)
+            thing_list = Model.get_by_params(params)
+        except Invalid as e:
+            abort(400,message='invalid parameter')
+        except:
+            abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
+        thing_dict = list(map(vars, thing_list))
+        return jsonify(thing_dict)
 
     def post(self):
         args = parser.parse_args()
-        thing = Model.from_dict({'name':args['name'], 'function':args['function']})
-        
-        # TODO: DAO should not be accessed from the app, the APP will interact with the MODEL to handle all business logic
-        dao.add(thing)
-
-        return thing.serialize(), 201
-
+        try:
+            req_params_schema(args)
+            thing = Model.save(args)
+        except Invalid as e:
+            abort(400,message='invalid parameter')
+        except:
+            abort(500, message='Unexpected Error '+str(sys.exc_info()[0]))
+        response = jsonify(vars(thing))
+        response.status_code = 201
+        return response
 
 api.add_resource(ThingList, '/things')
-api.add_resource(Thing, '/things/<name>')
+api.add_resource(Thing, '/things/<_id>')
 
-# TODO: what is this for?
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+app.run(debug=True,host='0.0.0.0', port=5000)

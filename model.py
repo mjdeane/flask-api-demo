@@ -1,19 +1,37 @@
+from dao import Dao
+
 class Model:
+    data_access = Dao()
 
-    def __init__(self, name, function):
-        self.name = name
-        self.function = function
-
-
-    # TODO: methods within this class should handle all the business logic from the app to the databases
-    # TODO: these methods should include get_by_id , get_by_params, update, save, delete
-
+    def __init__(self, params):
+        self.name = params['name'] if 'name' in params else None
+        self.function = params['function'] if 'function' in params else None
+        self._id = str(params['_id']) if '_id' in params else None
 
     @classmethod
-    def from_dict(_class, thing_dict):
-        name = thing_dict['name']
-        function = thing_dict['function']
-        return Model(name, function)
+    def update(cls, _id, params):
+        response = cls.data_access.update(_id, params)
+        thing = cls.data_access.find(_id)
+        return cls(thing)
 
-    def serialize(self):
-        return {'name':self.name,'function':self.function}
+    @classmethod
+    def save(cls, payload):
+        _id = cls.data_access.add(payload)
+        payload['_id'] = _id
+        return cls(payload)
+
+    @classmethod
+    def get_by_id(cls, _id):
+        thing = cls.data_access.find(_id)
+        return cls(thing)
+
+    @classmethod
+    def get_by_params(cls, params):
+        thing_list = cls.data_access.find_by_params(params)
+        thing_list = list(map(cls, thing_list))
+        return thing_list
+
+    @classmethod
+    def delete(cls, _id):
+        response = cls.data_access.delete(_id)
+        return response
